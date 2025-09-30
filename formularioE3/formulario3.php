@@ -5,7 +5,7 @@ $asignaturasUser = [];
 $formularioEnviado = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Validación
+    // Validación dfgdfg
     if (empty($_POST["nombre"])) {
         $errores['nombre'] = "El campo 'Nombre' es obligatorio.";
     } else {
