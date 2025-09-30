@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </head>
 <body>
     <?php if (!$formularioEnviado): ?>
-    <form method="post">
+    <form action="#" method="post">
         <h1>Inserte los datos del alumno</h1>
         <label>Nombre:</label>
         <input type="text" name="nombre" value="<?=$nombreUser?>">
@@ -109,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
         <input type="submit" value="Enviar">
-        <input type="reset" value="Reiniciar">
+        <input type="reset" value="Reiniciar" onclick="window.location.href=window.location.pathname">
     </form>
     <?php endif ?>
 </body>
