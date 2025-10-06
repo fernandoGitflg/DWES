@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Encriptador</title>
+</head>
+
+<body>
+    <h1>Encriptador / Desencriptador</h1>
+    <form action="funcionesE1.php" method="post">
+        <div>
+            <label for="texto">Texto:</label>
+            <input type="text" id="texto" name="texto" required>
+        </div>
+
+        <div>
+            <label for="clave">Clave (1-99):</label><br>
+            <input type="number" id="clave" name="clave" min="1" max="99" required>
+        </div>
+        <div>
+            <label>Acción:</label><br>
+            <input type="radio" id="encriptar" name="accion" value="encriptar" checked>
+            <label for="encriptar">Encriptar</label><br>
+            <input type="radio" id="desencriptar" name="accion" value="desencriptar">
+            <label for="desencriptar">Desencriptar</label>
+        </div>
+        <div>
+            <input type="submit" value="Procesar">
+        </div>
+    </form>
+</body>
+
+</html>
