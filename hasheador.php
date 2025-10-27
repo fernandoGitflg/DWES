@@ -7,8 +7,8 @@ echo $hash;
 $input = '1111';
 
 if (password_verify($input, $hash)) {
-    echo "✅ Coincide";
+    echo "Coincide";
 } else {
-    echo "❌ No coincide";
+    echo "No coincide";
 }
 ?>
