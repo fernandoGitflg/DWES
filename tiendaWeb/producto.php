@@ -39,10 +39,29 @@ try {
     $stmtProd->bindParam(':categoria', $categoria_id);
     $stmtProd->execute();
     $productos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
-
 } catch (PDOException $e) {
     echo "Error al cargar productos: " . $e->getMessage();
     exit;
+}
+
+// Validación de stock
+$mensaje_error = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comprar'])) {
+    $codigo = $_POST['comprar'];
+    $unidades = $_POST['unidades'][$codigo] ?? 0;
+
+    foreach ($productos as $prod) {
+        if ($prod['codigo'] == $codigo) {
+            if ($unidades > $prod['stock']) {
+                $mensaje_error[$codigo] = "No hay suficiente stock disponible.";
+            } else {
+                $_POST['unidades'] = $unidades;
+                $_POST['comprar'] = $codigo;
+                include("carrito.php");
+                exit;
+            }
+        }
+    }
 }
 ?>
 
@@ -54,7 +73,7 @@ try {
 </head>
 <body>
     <header>
-        <span>Usuario:<?php echo htmlspecialchars($email); ?></span>
+        <span>Usuario: <?php echo htmlspecialchars($email); ?></span>
         <a href="categorias.php">Home</a>
         <a href="carrito.php">Ver carrito</a>
         <a href="logout.php">Cerrar sesión</a>
@@ -62,35 +81,44 @@ try {
 
     <h2><?php echo htmlspecialchars($categoria['nombre']); ?></h2>
 
-    <?php if (count($productos) === 0): ?>
-        <p>No hay productos en esta categoría.</p>
-    <?php else: ?>
-        <form action="carrito.php" method="post">
-            <table>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Unidades</th>
-                    <th>Acción</th>
-                </tr>
-                <?php foreach ($productos as $prod): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($prod['nombre']); ?></td>
-                        <td><?php echo htmlspecialchars($prod['descripcion']); ?></td>
-                        <td><?php echo $prod['precio']; ?> €</td>
-                        <td><?php echo $prod['stock']; ?></td>
-                        <td>
-                            <input type="number" name="unidades[<?php echo $prod['codigo']; ?>]" min="0" max="<?php echo $prod['stock']; ?>">
-                        </td>
-                        <td>
-                            <button type="submit" name="comprar" value="<?php echo $prod['codigo']; ?>">Comprar</button>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </table>
-        </form>
-    <?php endif; ?>
+    <?php
+    if (count($productos) === 0) {
+        echo "<p>No hay productos en esta categoría.</p>";
+    } else {
+        echo '<table>';
+        echo '<tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Unidades</th>
+                <th>Acción</th>
+                <th></th>
+              </tr>';
+
+        foreach ($productos as $prod) {
+            echo '<form action="" method="post">';
+            echo '<tr>';
+            echo '<td>' . htmlspecialchars($prod['nombre']) . '</td>';
+            echo '<td>' . htmlspecialchars($prod['descripcion']) . '</td>';
+            echo '<td>' . number_format($prod['precio'], 2) . ' €</td>';
+            echo '<td>' . $prod['stock'] . '</td>';
+            echo '<td><input type="number" name="unidades[' . $prod['codigo'] . ']" min="1" required></td>';
+            echo '<td><button type="submit" name="comprar" value="' . $prod['codigo'] . '">Comprar</button></td>';
+
+            // Celda adicional solo si hay error
+            if (isset($mensaje_error[$prod['codigo']])) {
+                echo '<td style="color:red;">' . $mensaje_error[$prod['codigo']] . '</td>';
+            } else {
+                echo '<td></td>';
+            }
+
+            echo '</tr>';
+            echo '</form>';
+        }
+
+        echo '</table>';
+    }
+    ?>
 </body>
 </html>
