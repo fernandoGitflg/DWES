@@ -13,7 +13,6 @@ if (!$categoria_id) {
     exit;
 }
 
-// Conexión a la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -23,7 +22,6 @@ try {
     $conn = new PDO("mysql:host=$servername;dbname=$database", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Obtener nombre de la categoría
     $stmtCat = $conn->prepare("SELECT nombre FROM categorias WHERE codigo = :codigo");
     $stmtCat->bindParam(':codigo', $categoria_id);
     $stmtCat->execute();
@@ -34,7 +32,6 @@ try {
         exit;
     }
 
-    // Obtener productos de esa categoría
     $stmtProd = $conn->prepare("SELECT * FROM productos WHERE id_categoria = :categoria");
     $stmtProd->bindParam(':categoria', $categoria_id);
     $stmtProd->execute();
@@ -44,33 +41,19 @@ try {
     exit;
 }
 
-// Validación de stock
-$mensaje_error = [];
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comprar'])) {
-    $codigo = $_POST['comprar'];
-    $unidades = $_POST['unidades'][$codigo] ?? 0;
-
-    foreach ($productos as $prod) {
-        if ($prod['codigo'] == $codigo) {
-            if ($unidades > $prod['stock']) {
-                $mensaje_error[$codigo] = "No hay suficiente stock disponible.";
-            } else {
-                $_POST['unidades'] = $unidades;
-                $_POST['comprar'] = $codigo;
-                include("carrito.php");
-                exit;
-            }
-        }
-    }
-}
+$mensaje_global = $_GET['mensaje'] ?? null;
+$error_global = $_GET['error'] ?? null;
+$codigo_mensaje = $_GET['codigo'] ?? null;
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Productos</title>
 </head>
+
 <body>
     <header>
         <span>Usuario: <?php echo htmlspecialchars($email); ?></span>
@@ -97,22 +80,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comprar'])) {
               </tr>';
 
         foreach ($productos as $prod) {
-            echo '<form action="" method="post">';
+            echo '<form action="añadirCarrito.php" method="post">';
             echo '<tr>';
             echo '<td>' . htmlspecialchars($prod['nombre']) . '</td>';
             echo '<td>' . htmlspecialchars($prod['descripcion']) . '</td>';
             echo '<td>' . number_format($prod['precio'], 2) . ' €</td>';
-            echo '<td>' . $prod['stock'] . '</td>';
-            echo '<td><input type="number" name="unidades[' . $prod['codigo'] . ']" min="1" required></td>';
-            echo '<td><button type="submit" name="comprar" value="' . $prod['codigo'] . '">Comprar</button></td>';
-
-            // Celda adicional solo si hay error
-            if (isset($mensaje_error[$prod['codigo']])) {
-                echo '<td style="color:red;">' . $mensaje_error[$prod['codigo']] . '</td>';
+            echo '<td>';
+            if ($prod['stock'] == 0) {
+                echo 'Producto agotado';
+            } elseif ($prod['stock'] < 5) {
+                echo '¡Sólo quedan ' . $prod['stock'] . '!';
             } else {
-                echo '<td></td>';
+                echo $prod['stock'];
             }
-
+            echo '</td>';
+            echo '<td><input type="number" name="unidades[' . $prod['codigo'] . ']" min="1"></td>';
+            echo '<td>
+                    <input type="hidden" name="categoria_id" value="' . htmlspecialchars($categoria_id) . '">
+                    <button type="submit" name="comprar" value="' . $prod['codigo'] . '">Comprar</button>
+                  </td>';
+            echo '<td>';
+            if ($codigo_mensaje == $prod['codigo']) {
+                if ($mensaje_global === 'producto_añadido') {
+                    echo '<span style="color:green;">Añadido al carrito</span>';
+                } elseif ($error_global === 'stock_insuficiente') {
+                    echo '<span style="color:red;">No hay suficiente stock</span>';
+                } elseif ($error_global === 'datos_invalidos') {
+                    echo '<span style="color:red;">Cantidad inválida</span>';
+                }
+            }
+            echo '</td>';
             echo '</tr>';
             echo '</form>';
         }
@@ -121,4 +118,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comprar'])) {
     }
     ?>
 </body>
+
 </html>

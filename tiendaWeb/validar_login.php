@@ -1,42 +1,43 @@
 <?php
 session_start();
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$database = "cadena_restaurantes";
+$email = $_POST['usuario'] ?? '';
+$clave = $_POST['contraseña'] ?? '';
+
+if (!$email || !$clave) {
+    header("Location: login.php?error=3");
+    exit;
+}
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=$database", $username, $password);
+    $conn = new PDO("mysql:host=localhost;dbname=cadena_restaurantes", "root", "");
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $usuario = $_POST['usuario'] ?? '';
-        $contraseña = $_POST['contraseña'] ?? '';
+    $stmt = $conn->prepare("SELECT email, clave FROM restaurantes WHERE email = :email");
+    $stmt->bindParam(':email', $email);
+    $stmt->execute();
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (empty($usuario) || empty($contraseña)) {
-            header("Location: login.php?error=3");
-            exit;
+    if ($usuario && password_verify($clave, $usuario['clave'])) {
+        $_SESSION['usuario'] = $email;
+
+        if (isset($_POST['remember'])) {
+            setcookie('remember_email', $email, [
+                'expires' => time() + 604800,
+                'path' => '/',
+                'secure' => true,
+                'httponly' => true,
+                'samesite' => 'Strict'
+            ]);
         }
 
-        $sql = "SELECT clave FROM Restaurantes WHERE email = :usuario";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':usuario', $usuario);
-        $stmt->execute();
-
-        $datos = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($datos && password_verify($contraseña, $datos['clave'])) {
-            $_SESSION['usuario'] = $usuario;
-            header("Location: categorias.php");
-            exit;
-        } else {
-            header("Location: login.php?error=1");
-            exit;
-        }
+        header("Location: categorias.php");
+        exit;
+    } else {
+        header("Location: login.php?error=1");
+        exit;
     }
 } catch (PDOException $e) {
     header("Location: login.php?error=2");
     exit;
 }
-?>

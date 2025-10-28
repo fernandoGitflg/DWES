@@ -1,9 +1,15 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['usuario']) && isset($_COOKIE['remember_email'])) {
+    $_SESSION['usuario'] = $_COOKIE['remember_email'];
+}
+
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit;
 }
+
 $email = $_SESSION['usuario'];
 ?>
 
@@ -18,14 +24,13 @@ $email = $_SESSION['usuario'];
 
 <body>
     <header>
-        <span>Usuario:<?php echo htmlspecialchars($email); ?></span>
+        <span>Usuario: <?php echo htmlspecialchars($email); ?></span>
         <a href="categorias.php">Home</a>
         <a href="carrito.php">Ver carrito</a>
         <a href="logout.php">Cerrar sesión</a>
     </header>
 
     <?php
-    // Conexión a la base de datos
     $servername = "localhost";
     $username = "root";
     $password = "";
@@ -46,9 +51,9 @@ $email = $_SESSION['usuario'];
 
     <h2>Lista de categorías</h2>
     <ul>
-        <?php foreach ($categorias as $cat): ?>
-            <li><a href="producto.php?categoria=<?php echo $cat['codigo']; ?>">
-                    <?php echo htmlspecialchars($cat['nombre']); ?>
+        <?php foreach ($categorias as $categoria): ?>
+            <li><a href="producto.php?categoria=<?php echo $categoria['codigo']; ?>">
+                    <?php echo htmlspecialchars($categoria['nombre']); ?>
                 </a></li>
         <?php endforeach; ?>
     </ul>

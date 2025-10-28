@@ -1,43 +1,37 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+session_start();
+if (!isset($_SESSION['usuario'])) {
+    header("Location: login.php");
+    exit;
 }
 
 $email = $_SESSION['usuario'];
 $carrito = $_SESSION['carrito'] ?? [];
 
-// Si se ha enviado un nuevo producto desde productos.php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comprar'])) {
-    $codigo = $_POST['comprar'];
-    $unidades = $_POST['unidades'][$codigo] ?? 0; // ← CORREGIDO AQUÍ
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['vaciar'])) {
+        unset($_SESSION['carrito']);
+        header("Location: carrito.php");
+        exit;
+    }
 
-    if ($unidades > 0) {
-        try {
-            $conn = new PDO("mysql:host=localhost;dbname=cadena_restaurantes", "root", "");
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    if (isset($_POST['eliminar'])) {
+        $codigo = $_POST['eliminar'];
+        unset($_SESSION['carrito'][$codigo]);
+        header("Location: carrito.php");
+        exit;
+    }
 
-            // Incluimos el precio en la consulta
-            $stmt = $conn->prepare("SELECT nombre, descripcion, precio FROM productos WHERE codigo = :codigo");
-            $stmt->bindParam(':codigo', $codigo);
-            $stmt->execute();
-            $producto = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($producto) {
-                if (isset($carrito[$codigo])) {
-                    $carrito[$codigo]['unidades'] += $unidades;
-                } else {
-                    $carrito[$codigo] = [
-                        'nombre' => $producto['nombre'],
-                        'descripcion' => $producto['descripcion'],
-                        'precio' => $producto['precio'],
-                        'unidades' => $unidades
-                    ];
-                }
-                $_SESSION['carrito'] = $carrito;
+    if (isset($_POST['actualizar'])) {
+        foreach ($_POST['nuevas_unidades'] as $codigo => $cantidad) {
+            if ($cantidad > 0) {
+                $_SESSION['carrito'][$codigo]['unidades'] = $cantidad;
+            } else {
+                unset($_SESSION['carrito'][$codigo]);
             }
-        } catch (PDOException $e) {
-            echo "Error al añadir producto al carrito: " . $e->getMessage();
         }
+        header("Location: carrito.php");
+        exit;
     }
 }
 ?>
@@ -50,36 +44,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comprar'])) {
 </head>
 <body>
     <header>
-        <span>Usuario:<?php echo htmlspecialchars($email); ?></span>
+        <span>Usuario: <?php echo htmlspecialchars($email); ?></span>
         <a href="categorias.php">Home</a>
         <a href="carrito.php">Ver carrito</a>
         <a href="logout.php">Cerrar sesión</a>
     </header>
 
-    <hr><h2>Carrito de la compra</h2>
+    <h2>Carrito de la compra</h2>
 
-    <?php if (empty($carrito)) {
+    <?php
+    if (empty($carrito)) {
         echo "<p>El carrito está vacío.</p>";
     } else {
+        echo '<form method="post">';
         echo '<table>';
         echo '<tr>
                 <th>Nombre</th>
                 <th>Descripción</th>
                 <th>Precio</th>
                 <th>Unidades</th>
+                <th>Total</th>
+                <th>Acción</th>
               </tr>';
 
+        $total_pedido = 0;
+
         foreach ($carrito as $codigo => $producto) {
+            $total_producto = $producto['precio'] * $producto['unidades'];
+            $total_pedido += $total_producto;
+
             echo '<tr>';
             echo '<td>' . htmlspecialchars($producto['nombre']) . '</td>';
             echo '<td>' . htmlspecialchars($producto['descripcion']) . '</td>';
             echo '<td>' . number_format($producto['precio'], 2) . ' €</td>';
-            echo '<td>' . $producto['unidades'] . '</td>';
+            echo '<td><input type="number" name="nuevas_unidades[' . $codigo . ']" value="' . $producto['unidades'] . '" min="0"></td>';
+            echo '<td>' . number_format($total_producto, 2) . ' €</td>';
+            echo '<td><button type="submit" name="eliminar" value="' . $codigo . '">Eliminar</button></td>';
             echo '</tr>';
         }
 
-        echo '</table><hr>';
-        echo '<br><a href="realizar_pedido.php">Realizar pedido</a>';
+        echo '<tr><td colspan="4">Total del pedido:</td>';
+        echo '<td colspan="2">' . number_format($total_pedido, 2) . ' €</td></tr>';
+        echo '</table><br>';
+
+        echo '<button type="submit" name="actualizar">Actualizar cantidades</button> ';
+        echo '<button type="submit" name="vaciar">Vaciar carrito</button>';
+        echo '</form><br>';
+
+        echo '<a href="realizar_pedido.php">Realizar pedido</a>';
     }
     ?>
 </body>

@@ -15,22 +15,22 @@ if (isset($_GET['error'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicia Sesion</title>
+    <title>Inicia Sesión</title>
 </head>
-
 <body>
+    <h2>Acceso al sistema</h2>
     <form method="post" action="validar_login.php">
         <label for="usuario">Usuario</label>
         <input type="text" name="usuario" required>
         <label for="contraseña">Clave</label>
         <input type="password" name="contraseña" required>
-        <button type="submit">Enviar consulta</button>
+        <label>
+            <input type="checkbox" name="remember"> Recordarme
+        </label>
+        <button type="submit">Entrar</button>
     </form>
 </body>
-
 </html>
