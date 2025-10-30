@@ -64,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <th>Precio</th>
                 <th>Unidades</th>
                 <th>Total</th>
-                <th>Acción</th>
               </tr>';
 
         $total_pedido = 0;

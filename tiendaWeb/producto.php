@@ -13,24 +13,18 @@ if (!$categoria_id) {
     exit;
 }
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$database = "cadena_restaurantes";
+$mensaje_global = $_GET['mensaje'] ?? null;
+$error_global = $_GET['error'] ?? null;
+$codigo_mensaje = $_GET['codigo'] ?? null;
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=$database", $username, $password);
+    $conn = new PDO("mysql:host=localhost;dbname=cadena_restaurantes", "root", "");
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $stmtCat = $conn->prepare("SELECT nombre FROM categorias WHERE codigo = :codigo");
     $stmtCat->bindParam(':codigo', $categoria_id);
     $stmtCat->execute();
     $categoria = $stmtCat->fetch(PDO::FETCH_ASSOC);
-
-    if (!$categoria) {
-        echo "Categoría no encontrada.";
-        exit;
-    }
 
     $stmtProd = $conn->prepare("SELECT * FROM productos WHERE id_categoria = :categoria");
     $stmtProd->bindParam(':categoria', $categoria_id);
@@ -40,20 +34,14 @@ try {
     echo "Error al cargar productos: " . $e->getMessage();
     exit;
 }
-
-$mensaje_global = $_GET['mensaje'] ?? null;
-$error_global = $_GET['error'] ?? null;
-$codigo_mensaje = $_GET['codigo'] ?? null;
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <title>Productos</title>
 </head>
-
 <body>
     <header>
         <span>Usuario: <?php echo htmlspecialchars($email); ?></span>
@@ -73,34 +61,39 @@ $codigo_mensaje = $_GET['codigo'] ?? null;
                 <th>Nombre</th>
                 <th>Descripción</th>
                 <th>Precio</th>
-                <th>Stock</th>
+                <th>Stock disponible</th>
                 <th>Unidades</th>
                 <th>Acción</th>
                 <th></th>
               </tr>';
 
         foreach ($productos as $prod) {
+            $codigo = $prod['codigo'];
+            $stock_real = $prod['stock'];
+            $en_carrito = $_SESSION['carrito'][$codigo]['unidades'] ?? 0;
+            $stock_disponible = $stock_real - $en_carrito;
+
             echo '<form action="añadirCarrito.php" method="post">';
             echo '<tr>';
             echo '<td>' . htmlspecialchars($prod['nombre']) . '</td>';
             echo '<td>' . htmlspecialchars($prod['descripcion']) . '</td>';
             echo '<td>' . number_format($prod['precio'], 2) . ' €</td>';
             echo '<td>';
-            if ($prod['stock'] == 0) {
+            if ($stock_disponible <= 0) {
                 echo 'Producto agotado';
-            } elseif ($prod['stock'] < 5) {
-                echo '¡Sólo quedan ' . $prod['stock'] . '!';
+            } elseif ($stock_disponible < 5) {
+                echo '¡Sólo quedan ' . $stock_disponible . '!';
             } else {
-                echo $prod['stock'];
+                echo $stock_disponible;
             }
             echo '</td>';
-            echo '<td><input type="number" name="unidades[' . $prod['codigo'] . ']" min="1"></td>';
+            echo '<td><input type="number" name="unidades[' . $codigo . ']" min="1" max="' . $stock_disponible . '"></td>';
             echo '<td>
                     <input type="hidden" name="categoria_id" value="' . htmlspecialchars($categoria_id) . '">
-                    <button type="submit" name="comprar" value="' . $prod['codigo'] . '">Comprar</button>
+                    <button type="submit" name="comprar" value="' . $codigo . '" ' . ($stock_disponible <= 0 ? 'disabled' : '') . '>Comprar</button>
                   </td>';
             echo '<td>';
-            if ($codigo_mensaje == $prod['codigo']) {
+            if ($codigo_mensaje == $codigo) {
                 if ($mensaje_global === 'producto_añadido') {
                     echo '<span style="color:green;">Añadido al carrito</span>';
                 } elseif ($error_global === 'stock_insuficiente') {
@@ -118,5 +111,4 @@ $codigo_mensaje = $_GET['codigo'] ?? null;
     }
     ?>
 </body>
-
 </html>

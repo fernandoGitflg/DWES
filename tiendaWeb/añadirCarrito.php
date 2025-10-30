@@ -32,7 +32,10 @@ try {
         exit;
     }
 
-    if ($unidades > $producto['stock']) {
+    $unidades_en_carrito = $_SESSION['carrito'][$codigo]['unidades'] ?? 0;
+    $total_solicitado = $unidades_en_carrito + $unidades;
+
+    if ($total_solicitado > $producto['stock']) {
         header("Location: producto.php?categoria=$categoria_id&error=stock_insuficiente&codigo=$codigo");
         exit;
     }
