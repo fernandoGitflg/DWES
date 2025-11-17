@@ -91,7 +91,7 @@ function explorarBarco($tablero, $filaInicial, $columnaInicial, &$casillasExplor
         }
     }
 
-    return [[$filaInicial, $columnaInicial]]; // fallback si no se detecta barco completo
+    return [[$filaInicial, $columnaInicial]];
 }
 function validarFicheroBarcos($rutaFichero) {
     $lineas = file($rutaFichero, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -116,6 +116,7 @@ function validarFicheroBarcos($rutaFichero) {
 
     return true;
 }
+
 function esBarcoValido($coordenadas) {
     $filas = array_column($coordenadas, 0);
     $columnas = array_column($coordenadas, 1);
