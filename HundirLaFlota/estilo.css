@@ -61,6 +61,7 @@ td {
     background-color: #e0e0e0;
 }
 
+/* Tema oscuro: afecta solo a celdas vacías */
 body.oscuro td {
     background-color: #444;
     border-color: #666;
@@ -76,27 +77,28 @@ td a {
     line-height: 40px;
 }
 
-.agua {
-    background-color: #3399ff;
-    color: white;
+/* Colores de estado siempre fijos */
+td.agua {
+    background-color: #3399ff !important;
+    color: white !important;
 }
 
-.tocado {
-    background-color: #ff3333 ;
-    color: white ;
+td.tocado {
+    background-color: #ff3333 !important;
+    color: white !important;
 }
 
-.hundido {
-    background-color: #990000 ;
-    color: white ;
+td.hundido {
+    background-color: #990000 !important;
+    color: white !important;
 }
 
-.barco {
-    background-color: #cccccc ;
-    color: black ;
+td.barco {
+    background-color: #cccccc !important;
+    color: black !important;
 }
 
-
+/* Panel lateral */
 .panel {
     background-color: #fff;
     border: 1px solid #ccc;
