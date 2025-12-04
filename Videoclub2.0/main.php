@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-include_once 'app/Dwes/ProyectoVideoclub/Videoclub.php';
+include_once 'Dwes/ProyectoVideoclub/Videoclub.php';
 
 use Dwes\ProyectoVideoclub\Videoclub;
 
