@@ -32,34 +32,6 @@ class Videoclub {
     public function getNumTotalAlquileres(): int {
         return $this->numTotalAlquileres;
     }
-    public function alquilarSocioProducto(int $numSocio, int $numProducto): void {
-        try {
-            if (!isset($this->socios[$numSocio - 1])) {
-                throw new ClienteNoEncontradoException("Cliente #{$numSocio} no encontrado.");
-            }
-            if (!isset($this->productos[$numProducto - 1])) {
-                throw new SoporteNoEncontradoException("Soporte #{$numProducto} no encontrado.");
-            }
-
-            $cliente = $this->socios[$numSocio - 1];
-            $soporte = $this->productos[$numProducto - 1];
-
-            if ($soporte->alquilado) {
-                throw new \Dwes\ProyectoVideoclub\Util\SoporteYaAlquiladoException(
-                    "El soporte '{$soporte->getTitulo()}' ya está alquilado."
-                );
-            }
-
-            $cliente->alquilar($soporte);
-            $this->numProductosAlquilados++;
-            $this->numTotalAlquileres++;
-
-            echo "Cliente {$numSocio} ha alquilado el soporte '{$soporte->getTitulo()}' correctamente.<br>";
-
-        } catch (VideoclubException $e) {
-            echo "Error en alquiler simple: " . $e->getMessage() . "<br>";
-        }
-    }
     public function alquilarSocioProductos(int $numSocio, array $numerosProductos): void {
         try {
             if (!isset($this->socios[$numSocio - 1])) {

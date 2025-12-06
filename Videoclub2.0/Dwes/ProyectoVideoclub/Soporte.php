@@ -15,7 +15,7 @@ class Soporte {
         $this->titulo = $titulo;
         $this->numero = $numero;
         $this->precio = $precio;
-        $this->alquilado = false; // inicializado
+        $this->alquilado = false; 
     }
 
     public function getTitulo(): string { return $this->titulo; }
@@ -24,7 +24,8 @@ class Soporte {
     public function getPrecioConIva(): float { return $this->precio * (1 + self::IVA); }
 
     public function muestraResumen(): void {
-        echo "Soporte #{$this->numero}: {$this->titulo} - Precio base: {$this->precio}€";
+        echo "#Soporte {$this->numero}: {$this->titulo} - Precio base: {$this->precio}€";
         echo $this->alquilado ? " (ALQUILADO)<br>" : " (DISPONIBLE)<br>";
     }
+
 }

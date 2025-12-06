@@ -22,7 +22,7 @@ class Juego extends Soporte {
 
     public function muestraResumen(): void {
         parent::muestraResumen();
-        echo "Consola: {$this->consola}\n";
-        $this->muestraJugadoresPosibles();
+        echo "Consola: {$this->consola} Jugadores: de {$this->minNumJugadores} a {$this->maxNumJugadores}<br>";
     }
+
 }

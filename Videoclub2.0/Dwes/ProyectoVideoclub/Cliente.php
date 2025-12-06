@@ -30,7 +30,7 @@ class Cliente {
             throw new SoporteYaAlquiladoException("El soporte '{$soporte->getTitulo()}' ya está alquilado por {$this->nombre}.");
         }
         $this->soportesAlquilados[] = $soporte;
-        $soporte->alquilado = true; // marcar como alquilado
+        $soporte->alquilado = true; 
         return true;
     }
 
